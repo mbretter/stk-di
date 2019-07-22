@@ -19,7 +19,7 @@ demonstration purposes.
 ## Injectable
 
 The injectable interface is a dummy/empty interface for targeting injectable services. Services should implement 
-this interfaces.
+this interface.
 
 ```php
 use Stk\Service\Injectable;
@@ -32,7 +32,7 @@ class MyService implements Injectable
 
 ## Registering services
 
-As a first step you have to register all your services in the container and it is recommended to put the service 
+As a first step you have to put all your services into the container and it is recommended to put the service 
 factory into the container too.
 
 ```php
@@ -196,7 +196,7 @@ $container['serviceE'] = function ($c) {
     return $c['factory']->get(ServiceE::class);
 };
 $container['onDemandServiceH'] = function ($c) {
-    // the protect method wraps the service inside the OnDemand
+    // the protect method wraps the service inside into the OnDemand injectable
     return $c['factory']->protect(ServiceH::class);
 };
 
@@ -214,7 +214,7 @@ $svc = $serviceE->getService();
 
 ```
 
-### non injectables (3rd party services)
+### Non injectables (3rd party services)
 
 If you want to inject services which are not implementing the Injectable interface (http-clients, etc.), 
 you can register them using the OnDemand service.
@@ -250,7 +250,7 @@ $std = $serviceJ->getForeignService();
 
 ```
 
-## reusability with traits
+## Reusability with traits
 
 Traits are very handy, if you do not want to duplicate the code when injecting the same service again and again.
 

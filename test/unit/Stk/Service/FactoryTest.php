@@ -142,7 +142,7 @@ class FactoryTest extends TestCase
     {
         $serviceG = $this->container->get('serviceG');
         $this->assertInstanceOf(ServiceA::class, $serviceG->service);
-        $this->assertIsArray($serviceG->whatever);
+        $this->assertTrue(is_array($serviceG->whatever));
         $this->assertNull($serviceG->blackhole);
     }
 

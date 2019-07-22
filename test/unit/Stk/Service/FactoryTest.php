@@ -2,6 +2,7 @@
 
 namespace StkTest\Service;
 
+use Closure;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use stdClass;
@@ -65,12 +66,22 @@ class FactoryTest extends TestCase
             return $c['factory']->get(ServiceJ::class);
         };
 
+        $container['serviceK'] = function ($c) {
+            return function ($param2) use ($c) {
+                return $c['factory']->get(ServiceK::class, $c['config'], $param2);
+            };
+        };
+
         $container['onDemandServiceH'] = function ($c) {
             return $c['factory']->protect(ServiceH::class);
         };
 
         $container['onDemandServiceI'] = function ($c) {
             return $c['factory']->protect(ServiceI::class);
+        };
+
+        $container['foreignService'] = function ($c) {
+            return $c['factory']->protect(stdClass::class);
         };
 
         $this->container = $container;
@@ -99,8 +110,8 @@ class FactoryTest extends TestCase
 
     public function testConstructorInjectionContainer()
     {
-        $serviceC = $this->container->get('serviceJ');
-        $this->assertSame($this->container, $serviceC->container);
+        $serviceJ = $this->container->get('serviceJ');
+        $this->assertSame($this->container, $serviceJ->container);
     }
 
     public function testMethodInjection()
@@ -133,6 +144,18 @@ class FactoryTest extends TestCase
         $this->assertInstanceOf(ServiceA::class, $serviceG->service);
         $this->assertIsArray($serviceG->whatever);
         $this->assertNull($serviceG->blackhole);
+    }
+
+    public function testWithContainerParams()
+    {
+        /** @var Closure $serviceK */
+        $factory = $this->container->get('serviceK');
+
+        /** @var ServiceK $serviceK */
+        $serviceK = $factory('val2');
+
+        $this->assertEquals($this->container->get('config'), $serviceK->config);
+        $this->assertEquals('val2', $serviceK->arg2);
     }
 
     public function testOnDemand()
@@ -191,6 +214,20 @@ class FactoryTest extends TestCase
         $this->assertInstanceOf(ServiceH::class, $svc);
         $this->assertSame($svc, $serviceE->getService());
         $this->assertNotSame($svc, $serviceE->newService());
+    }
+
+    public function testOnDemandForeignService()
+    {
+        /** @var OnDemand */
+        $foreignService = $this->container->get('foreignService');
+
+        $svc = $foreignService->getInstance();
+        $this->assertInstanceOf(stdClass::class, $svc);
+
+        /** @var ServiceJ $serviceJ */
+        $serviceJ = $this->container->get('serviceJ');
+        $this->assertInstanceOf(OnDemand::class, $serviceJ->foreignService);
+        $this->assertInstanceOf(stdClass::class, $serviceJ->foreignService->getInstance());
     }
 }
 
@@ -342,9 +379,30 @@ class ServiceI
 class ServiceJ
 {
     public $container = null;
+    /** @var OnDemand */
+    public $foreignService = null;
 
     public function __construct($container)
     {
         $this->container = $container;
     }
+
+
+    private function setForeignServices(OnDemand $foreignService)
+    {
+        $this->foreignService = $foreignService;
+    }
+}
+
+class ServiceK
+{
+    public $config = null;
+    public $arg2 = null;
+
+    public function __construct($config, $arg2)
+    {
+        $this->config = $config;
+        $this->arg2   = $arg2;
+    }
+
 }

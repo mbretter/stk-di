@@ -1,11 +1,12 @@
 # stk-di
 
 [![License](https://img.shields.io/badge/license-BSD-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![PHP 7.1](https://img.shields.io/badge/php-7.1-yellow.svg)](http://www.php.net)
+[![PHP 7.2](https://img.shields.io/badge/php-7.2-yellow.svg)](http://www.php.net)
 [![Build Status](https://travis-ci.org/mbretter/stk-di.svg?branch=master)](https://travis-ci.org/mbretter/stk-di)
 [![Coverage](https://coveralls.io/repos/github/mbretter/stk-di/badge.svg?branch=master)](https://coveralls.io/github/mbretter/stk-di?branch=master)
 [![Latest Stable Version](https://img.shields.io/packagist/v/mbretter/stk-di.svg)](https://packagist.org/packages/mbretter/stk-di)
 [![Total Downloads](http://img.shields.io/packagist/dt/mbretter/stk-di.svg)](https://packagist.org/packages/mbretter/stk-di)
-
 
 A simple dependency injection system usable with any container implementing the Psr\Container\ContainerInterface.
 

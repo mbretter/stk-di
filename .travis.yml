@@ -19,7 +19,7 @@ before_script:
   - ls -al
 
 script:
-  - phpunit --bootstrap tests/unit/bootstrap.php --coverage-clover build/logs/clover.xml
+  - phpunit --bootstrap test/unit/bootstrap.php --coverage-clover build/logs/clover.xml
 
 after_success:
 # Submit coverage report to Coveralls servers, see .coveralls.yml

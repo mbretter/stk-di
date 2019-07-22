@@ -11,7 +11,7 @@ class DumbContainerTest extends TestCase
     /** @var  DumbContainer */
     protected $container;
 
-    public function setUp()
+    protected function setUp()
     {
         $this->container = new DumbContainer();
     }

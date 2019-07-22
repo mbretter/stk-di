@@ -11,7 +11,7 @@ class DumbContainerTest extends TestCase
     /** @var  DumbContainer */
     protected $container;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->container = new DumbContainer();
     }
@@ -22,13 +22,9 @@ class DumbContainerTest extends TestCase
         $this->assertEquals('bar', $this->container->get('foo'));
     }
 
-    /**
-     * @expectedException \Stk\Service\Exception\NotFoundException
-     *
-     * @throws NotFoundException
-     */
     public function testGetNotFound()
     {
+        $this->expectException(NotFoundException::class);
         $this->assertEquals('bar', $this->container->get('foo'));
     }
 

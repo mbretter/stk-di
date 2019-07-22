@@ -17,7 +17,7 @@ class FactoryTest extends TestCase
     /** @var  DumbContainer */
     protected $container;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $container           = new DumbContainer();
         $container['config'] = [

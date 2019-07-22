@@ -1,5 +1,8 @@
 # stk-di
 
+[![License](https://img.shields.io/badge/license-BSD-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+
+
 A simple dependency injection system usable with any container implementing the Psr\Container\ContainerInterface.
 
 The service factory supports constructor injection, injection using a private method inject() and argument injection 
@@ -8,7 +11,7 @@ for services implementing the Injectable interface.
 As a special feature OnDemand services are supported, they support service creation at runtime not at creation time, 
 this should avoid a dependency loading bloat for each request, due to complex dependencies. As a side effect 
 OnDemand services may be used to inject objects which are not implementing the Injectable interface, like 
-3rd services.
+3rd party services.
 
 The library comes up with a dumb container implementation, this container is mainly used for testing and 
 demonstration purposes. 
@@ -36,6 +39,11 @@ factory into the container too.
 use Stk\Service\DumbContainer;
 use Stk\Service\Factory;
 
+class ServiceA implements Injectable
+{
+
+}
+
 $container = new DumbContainer();
 $container['config'] = [
     'param1' => 'foo',
@@ -47,19 +55,12 @@ $container['serviceA'] = function (ContainerInterface $c) {
     return $c['factory']->get(ServiceA::class);
 };
 
-...
-
-class ServiceA implements Injectable
-{
-
-}
-
 ```
 
 ## Argument injection
 
 The service factory scans each service for private methods having injectables as argument and injects the 
-service by fetching it from the container using the argument name as key.
+service by fetching it from the container, using the argument name as key.
 
 ```php
 class ServiceA implements Injectable
@@ -67,7 +68,7 @@ class ServiceA implements Injectable
 
 }
 
-class ServiceB
+class ServiceB implements Injectable
 {
     protected $serviceA;
 
@@ -92,14 +93,13 @@ $service = $this->container->get('serviceB');
 
 ## Constructor injection
 
-When instantiating services, the factory scans the constructor for argument names which are found in the container.
-If a service was found, the service is injected, default values are supported, if the container has no service with 
+When instantiating services, the factory scans the constructor for argument names, if they are found in the container,
+the service is injected, default values are supported, if the container has no service with 
 the given name. It is not needed, that the injected service implements the injectable interface, any container 
 value may be injected.
 
 ```php
-
-class ServiceC
+class ServiceC implements Injectable
 {
     protected $service;
     protected $whatever;
@@ -119,8 +119,7 @@ There are some use cases, where it is needed to pass some kind of static paramet
 service and some additional parameters at instantiation time.
 
 ```php
-
-class ServiceK
+class ServiceK implements Injectable
 {
     protected $config;
     public $param1;
@@ -159,8 +158,7 @@ ServiceB, ServiceB needs ServiceC ... at the end you have all your services inst
 they are used or not.
 
 ```php
-
-class ServiceH
+class ServiceH implements Injectable
 {
     public $arg1 = null;
     public $arg2 = null;
@@ -172,15 +170,15 @@ class ServiceH
     }
 }
 
-class ServiceE
+class ServiceE implements Injectable
 {
     /** @var OnDemand */
     public $onDemand;
 
     // trigger DI of OnDemand service H
-    private function setService(OnDemand $onDemandServiceH)
+    private function setService(OnDemand $serviceH)
     {
-        $this->onDemand = $onDemandServiceH;
+        $this->onDemand = $serviceH;
     }
 
     public function getService()
@@ -203,7 +201,7 @@ $container['onDemandServiceH'] = function ($c) {
 };
 
 /** @var OnDemand $serviceH */
-$serviceH = $container->get('onDemandServiceH');
+$serviceH = $container->get('serviceH');
 $inst     = $serviceH->newInstance('foo', 'bar');
 
 // or if you want to treat them as singleton
@@ -222,8 +220,7 @@ If you want to inject services which are not implementing the Injectable interfa
 you can register them using the OnDemand service.
 
 ```php
-
-class ServiceJ
+class ServiceJ implements Injectable
 {
     /** @var OnDemand */
     protected $foreignService = null;
@@ -260,10 +257,9 @@ Traits are very handy, if you do not want to duplicate the code when injecting t
 Write a Trait with the property, geter and seter
 
 ```php
-
 use Stk\Service\OnDemand;
 
-trait DependsOnServiceA
+trait DependsOnServiceB 
 {
     /** @var OnDemand */
     protected $_serviceB;
@@ -286,9 +282,9 @@ trait DependsOnServiceA
 
 ...
 
-class ServiceJ
+class ServiceJ implements Injectable
 {
-    use DependsOnServiceA;
+    use DependsOnServiceB;
 }
 
 ```

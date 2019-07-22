@@ -1,7 +1,7 @@
 {
   "name": "mbretter/stk-di",
   "license": "BSD-3-Clause",
-  "description": "dependency injection stuff",
+  "description": "Dependency injection made easy",
   "type": "library",
   "authors": [
     {

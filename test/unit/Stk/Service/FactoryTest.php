@@ -46,10 +46,6 @@ class FactoryTest extends TestCase
             return $c['factory']->di($c['factory']->build(new ReflectionClass(ServiceD::class)));
         };
 
-        $container['serviceD2'] = function ($c) {
-            return $c['factory']->get(ServiceD::class);
-        };
-
         $container['serviceE'] = function ($c) {
             return $c['factory']->get(ServiceE::class);
         };
@@ -114,21 +110,11 @@ class FactoryTest extends TestCase
         $this->assertSame($this->container, $serviceJ->container);
     }
 
-    public function testMethodInjection()
-    {
-        $serviceD = $this->container->get('serviceD');
-        $this->assertInstanceOf(ServiceA::class, $serviceD->service);
-        $serviceD = $this->container->get('serviceD2');
-        $this->assertInstanceOf(ServiceA::class, $serviceD->service);
-    }
-
     public function testCombinedInjection()
     {
         $serviceF = $this->container->get('serviceF');
         $this->assertEquals($this->container->get('config'), $serviceF->config);
-        $this->assertEquals('bar', $serviceF->varx);
         $this->assertInstanceOf(ServiceC::class, $serviceF->service);
-        $this->assertInstanceOf(ServiceB::class, $serviceF->serviceB);
         $this->assertInstanceOf(ServiceA::class, $serviceF->getServiceA());
     }
 
@@ -265,14 +251,6 @@ class ServiceCa
 
 class ServiceD
 {
-    public $service;
-
-    private function inject($serviceA)
-    {
-        $this->service = $serviceA;
-    }
-
-
 }
 
 class ServiceE
@@ -310,12 +288,6 @@ class ServiceF
     {
         $this->service = $serviceC;
         $this->config  = $config;
-    }
-
-    public function inject($serviceB, $varx = 'bar')
-    {
-        $this->serviceB = $serviceB;
-        $this->varx     = $varx;
     }
 
     private function setServiceA(Injectable $serviceA)

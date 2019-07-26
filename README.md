@@ -1,20 +1,20 @@
 # stk-di
 
 [![License](https://img.shields.io/badge/license-BSD-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-[![PHP 7.1](https://img.shields.io/badge/php-7.1-yellow.svg)](http://www.php.net)
 [![PHP 7.2](https://img.shields.io/badge/php-7.2-yellow.svg)](http://www.php.net)
+[![PHP 7.3](https://img.shields.io/badge/php-7.3-yellow.svg)](http://www.php.net)
 [![Build Status](https://travis-ci.org/mbretter/stk-di.svg?branch=master)](https://travis-ci.org/mbretter/stk-di)
 [![Coverage](https://coveralls.io/repos/github/mbretter/stk-di/badge.svg?branch=master)](https://coveralls.io/github/mbretter/stk-di?branch=master)
 [![Latest Stable Version](https://img.shields.io/packagist/v/mbretter/stk-di.svg)](https://packagist.org/packages/mbretter/stk-di)
-[![Total Downloads](http://img.shields.io/packagist/dt/mbretter/stk-di.svg)](https://packagist.org/packages/mbretter/stk-di)
+[![Total Downloads](https://img.shields.io/packagist/dt/mbretter/stk-di.svg)](https://packagist.org/packages/mbretter/stk-di)
 
 A simple dependency injection system usable with any container implementing the Psr\Container\ContainerInterface.
 
-The service factory supports constructor injection, injection using a private method inject() and argument injection 
+The service factory supports constructor injection and argument injection 
 for services implementing the Injectable interface. 
 
 As a special feature OnDemand services are supported, they support service creation at runtime not at creation time, 
-this should avoid a dependency loading bloat for each request, due to complex dependencies. As a side effect 
+this avoids a dependency loading bloat for each request, due to complex dependencies. As a side effect 
 OnDemand services may be used to inject objects which are not implementing the Injectable interface, like 
 3rd party services.
 
@@ -99,8 +99,8 @@ $service = $this->container->get('serviceB');
 ## Constructor injection
 
 When instantiating services, the factory scans the constructor for argument names, if they are found in the container,
-the service is injected, default values are supported, if the container has no service with 
-the given name. It is not needed, that the injected service implements the injectable interface, any container 
+the service is injected, default values are supported (if the container has no service with 
+the given name). It is not needed, that the injected service implements the injectable interface, any container 
 value may be injected.
 
 ```php
@@ -120,8 +120,9 @@ class ServiceC implements Injectable
 
 ### Constructor injection with params
 
-There are some use cases, where it is needed to pass some kind of static parameters (e.g. config settings) to the 
-service and some additional parameters at instantiation time.
+If it is needed to pass some kind of static parameters (e.g. config settings) at declaration time 
+and some additional parameters at instantiation time, the service factory skips the passed parameters and only
+injects the remaining arguments. 
 
 ```php
 class ServiceK implements Injectable
@@ -221,7 +222,7 @@ $svc = $serviceE->getService();
 
 ### Non injectables (3rd party services)
 
-If you want to inject services which are not implementing the Injectable interface (http-clients, etc.), 
+If you want to inject services not implementing the Injectable interface (http-clients, etc.), 
 you can register them using the OnDemand service.
 
 ```php

@@ -152,25 +152,6 @@ class Factory
             }
         }
 
-        /*
-         * lookup for inject method and invoke if present with args
-         * the intention is to have a private-like injection method
-         * you can inject 3rd party services which don't have the Injectable interface implemented
-         */
-        if ($reflectionClass->hasMethod('inject')) {
-            $method = $reflectionClass->getMethod('inject');
-            $args   = [];
-            foreach ($method->getParameters() as $param) {
-                if (!$this->container->has($param->getName()) && $param->isDefaultValueAvailable()) {
-                    $args[] = $param->getDefaultValue();
-                } else {
-                    $args[] = $this->container->get($param->getName());
-                }
-            }
-            $method->setAccessible(true);
-            $method->invokeArgs($svc, $args);
-        }
-
         return $svc;
     }
 }

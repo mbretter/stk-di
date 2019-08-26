@@ -227,7 +227,7 @@ class ServiceB
 
 }
 
-class ServiceC
+class ServiceC implements Injectable
 {
     public $service;
 
@@ -237,7 +237,7 @@ class ServiceC
     }
 }
 
-class ServiceCa
+class ServiceCa implements Injectable
 {
     public $service;
     public $config;
@@ -275,7 +275,7 @@ class ServiceE
 }
 
 
-class ServiceF
+class ServiceF implements Injectable
 {
     public $serviceB;
     protected $serviceA;
@@ -348,7 +348,7 @@ class ServiceI
     }
 }
 
-class ServiceJ
+class ServiceJ implements Injectable
 {
     public $container = null;
     /** @var OnDemand */
@@ -366,7 +366,7 @@ class ServiceJ
     }
 }
 
-class ServiceK
+class ServiceK implements Injectable
 {
     public $config = null;
     public $arg2 = null;

@@ -79,7 +79,7 @@ class Factory
          * constructor injection
          * exclude passed params from DI
          */
-        if ($constructor !== null) {
+        if ($constructor !== null && $reflectionClass->implementsInterface(Injectable::class)) {
             $numParams  = count($params);
             $parameters = $constructor->getParameters();
             $params     = array_pad($params, -1 * $constructor->getNumberOfParameters(), null);

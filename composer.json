@@ -2,6 +2,11 @@
   "name": "mbretter/stk-di",
   "license": "BSD-3-Clause",
   "description": "Dependency injection made easy",
+  "keywords": [
+    "stk",
+    "dependency injection",
+    "di"
+  ],
   "type": "library",
   "authors": [
     {

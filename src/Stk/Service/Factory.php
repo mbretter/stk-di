@@ -2,6 +2,7 @@
 
 namespace Stk\Service;
 
+use Closure;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -33,7 +34,7 @@ class Factory
     {
         array_unshift($params, $classname);
 
-        $onDemand = new OnDemand(function (... $args) use ($params) {
+        $onDemand = new OnDemand(function (...$args) use ($params) {
             return call_user_func_array([$this, 'get'], array_merge($params, $args));
         });
 
@@ -127,16 +128,21 @@ class Factory
          */
         $methods = $reflectionClass->getMethods(ReflectionMethod::IS_PRIVATE);
         foreach ($methods as $method) {
-            if ($method->getName() == 'inject') {
-                continue;
-            }
 
             $args  = [];
             $found = false;
             foreach ($method->getParameters() as $idx => $param) {
+
+                $paramName = $param->getName();
                 if ($param->getClass() !== null && $param->getClass()->implementsInterface(Injectable::class)) {
-                    $args[] = $this->container->get($param->getName());
+                    $args[] = $this->container->get($paramName);
                     $found  = true;
+                } elseif ($param->getClass() !== null && $param->getClass()->getName() == Closure::class) {
+                    // closure injection, but only if found in container
+                    if ($this->container->has($paramName)) {
+                        $args[] = $this->container->get($paramName);
+                        $found  = true;
+                    }
                 } else {
                     if ($param->isDefaultValueAvailable()) {
                         $args[] = $param->getDefaultValue();

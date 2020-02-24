@@ -68,6 +68,10 @@ class FactoryTest extends TestCase
             };
         };
 
+        $container['serviceL'] = function ($c) {
+            return $c['factory']->get(ServiceL::class);
+        };
+
         $container['onDemandServiceH'] = function ($c) {
             return $c['factory']->protect(ServiceH::class);
         };
@@ -78,6 +82,18 @@ class FactoryTest extends TestCase
 
         $container['foreignService'] = function ($c) {
             return $c['factory']->protect(stdClass::class);
+        };
+
+        $container['closure'] = function ($c) {
+            return function () {
+                return (object)['creator' => 'Closure'];
+            };
+        };
+
+        $container['closureWithParam'] = function ($c) {
+            return function ($creator) {
+                return (object)['creator' => $creator];
+            };
         };
 
         $this->container = $container;
@@ -214,6 +230,30 @@ class FactoryTest extends TestCase
         $serviceJ = $this->container->get('serviceJ');
         $this->assertInstanceOf(OnDemand::class, $serviceJ->foreignService);
         $this->assertInstanceOf(stdClass::class, $serviceJ->foreignService->getInstance());
+    }
+
+    public function testClosureInject()
+    {
+        /** @var ServiceL $serviceL */
+        $serviceL = $this->container->get('serviceL');
+
+        $this->assertInstanceOf(Closure::class, $serviceL->closure);
+        $closure = $serviceL->closure;
+        $svc = $closure();
+        $this->assertInstanceOf(stdClass::class, $svc);
+        $this->assertEquals('Closure', $svc->creator);
+    }
+
+    public function testClosureInjectWithParam()
+    {
+        /** @var ServiceL $serviceL */
+        $serviceL = $this->container->get('serviceL');
+
+        $this->assertInstanceOf(Closure::class, $serviceL->closureWithParam);
+        $closure = $serviceL->closureWithParam;
+        $svc = $closure('itsme');
+        $this->assertInstanceOf(stdClass::class, $svc);
+        $this->assertEquals('itsme', $svc->creator);
     }
 }
 
@@ -375,6 +415,23 @@ class ServiceK implements Injectable
     {
         $this->config = $config;
         $this->arg2   = $arg2;
+    }
+
+}
+
+
+class ServiceL implements Injectable
+{
+    /** @var Closure */
+    public $closure = null;
+
+    /** @var Closure */
+    public $closureWithParam = null;
+
+    private function setClosures(Closure $closure, Closure $closureWithParam)
+    {
+        $this->closure = $closure;
+        $this->closureWithParam = $closureWithParam;
     }
 
 }

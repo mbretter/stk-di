@@ -2,7 +2,7 @@
 
 namespace Stk\Service;
 
-final class OnDemand implements Injectable
+class OnDemand implements Injectable
 {
     /** @var  mixed */
     private $_instance;

@@ -4,17 +4,21 @@ namespace Stk\Service;
 
 class OnDemand implements Injectable
 {
-    /** @var  mixed */
+    /** @var mixed */
     private $_instance;
 
-    /** @var  callable */
+    /** @var callable */
     private $_constructor;
 
-    public function __construct($constructor)
+    public function __construct(callable $constructor)
     {
         $this->_constructor = $constructor;
     }
 
+    /**
+     * @param mixed ...$args
+     * @return mixed
+     */
     public function getInstance(... $args)
     {
         if ($this->_instance === null) {
@@ -24,6 +28,10 @@ class OnDemand implements Injectable
         return $this->_instance;
     }
 
+    /**
+     * @param mixed ...$args
+     * @return mixed
+     */
     public function newInstance(... $args)
     {
         return call_user_func_array($this->_constructor, $args);

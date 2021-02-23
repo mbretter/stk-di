@@ -15,7 +15,7 @@ class DumbContainer implements ContainerInterface, ArrayAccess
     /**
      * @var mixed[]
      */
-    protected $storage = [];
+    protected array $storage = [];
 
     /**
      * @param mixed[] $storage
@@ -26,7 +26,8 @@ class DumbContainer implements ContainerInterface, ArrayAccess
     }
 
     /**
-     * {@inheritDoc}
+     * @param string $id
+     * @param mixed $value
      */
     public function set(string $id, $value): void
     {

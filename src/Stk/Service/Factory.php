@@ -12,10 +12,9 @@ use ReflectionMethod;
 
 class Factory
 {
-    /** @var ContainerInterface */
-    protected $container;
+    protected ContainerInterface $container;
 
-    public function __construct($container)
+    public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
     }
@@ -25,34 +24,30 @@ class Factory
      * this avoids the dependency nightmare on bigger projects where practically all services are instantiated
      * whether they are used or not (dependency bloat).
      *
-     * @param $classname
+     * @param string $classname
      * @param mixed ...$params
      *
      * @return OnDemand
      */
-    public function protect($classname, ...$params)
+    public function protect(string $classname, ...$params)
     {
         array_unshift($params, $classname);
 
-        $onDemand = new OnDemand(function (...$args) use ($params) {
+        return new OnDemand(function (...$args) use ($params) {
             return call_user_func_array([$this, 'get'], array_merge($params, $args));
         });
-
-        return $onDemand;
     }
 
     /**
      * combine construct and di into one method
      *
-     * @param $classname
+     * @param class-string $classname
      * @param array ...$params
      *
      * @return mixed
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
      * @throws ReflectionException
      */
-    public function get($classname, ...$params)
+    public function get(string $classname, ...$params)
     {
         $reflectionClass = new ReflectionClass($classname);
         array_unshift($params, $reflectionClass);
@@ -67,12 +62,10 @@ class Factory
      * @param ReflectionClass $reflectionClass
      * @param array ...$params
      *
-     * @return object|mixed
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @return object
      * @throws ReflectionException
      */
-    public function build($reflectionClass, ...$params)
+    public function build(ReflectionClass $reflectionClass, ...$params): object
     {
         $constructor = $reflectionClass->getConstructor();
 
@@ -103,15 +96,13 @@ class Factory
     }
 
     /**
-     * @param $svc
-     * @param null $reflectionClass
+     * @param object $svc
+     * @param ?ReflectionClass $reflectionClass
      *
-     * @return mixed
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @return object
      * @throws ReflectionException
      */
-    public function di($svc, $reflectionClass = null)
+    public function di(object $svc, ReflectionClass $reflectionClass = null): object
     {
         if ($reflectionClass === null) {
             $reflectionClass = new ReflectionClass($svc);

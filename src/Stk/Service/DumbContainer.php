@@ -12,45 +12,24 @@ use Stk\Service\Exception\NotFoundException;
  */
 class DumbContainer implements ContainerInterface, ArrayAccess
 {
-    /**
-     * @var mixed[]
-     */
     protected array $storage = [];
 
-    /**
-     * @param mixed[] $storage
-     */
     public function __construct(array $storage = [])
     {
         $this->storage = $storage;
     }
 
-    /**
-     * @param string $id
-     * @param mixed $value
-     */
-    public function set(string $id, $value): void
+    public function set(string $id, mixed $value): void
     {
         $this->storage[$id] = $value;
     }
 
-    /**
-     * @param string $id
-     *
-     * @return bool
-     */
-    public function has($id): bool
+    public function has(string $id): bool
     {
         return isset($this->storage[$id]);
     }
 
-    /**
-     * @param string $id
-     *
-     * @return mixed
-     * @throws NotFoundException
-     */
-    public function get($id)
+    public function get(string $id): mixed
     {
         if (!isset($this->storage[$id])) {
             throw new NotFoundException();
@@ -64,9 +43,6 @@ class DumbContainer implements ContainerInterface, ArrayAccess
         return $value;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function remove(string $id): void
     {
         if (!isset($this->storage[$id])) {
@@ -75,48 +51,22 @@ class DumbContainer implements ContainerInterface, ArrayAccess
         unset($this->storage[$id]);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @param string $offset
-     * @param mixed $value
-     */
-    public function offsetSet($offset, $value): void
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         $this->set($offset, $value);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @param string $offset
-     *
-     * @return bool
-     */
-    public function offsetExists($offset): bool
+    public function offsetExists(mixed $offset): bool
     {
         return $this->has($offset);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @param string $offset
-     *
-     * @return mixed
-     * @throws NotFoundException
-     */
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): mixed
     {
         return $this->get($offset);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @param string $offset
-     */
-    public function offsetUnset($offset): void
+    public function offsetUnset(mixed $offset): void
     {
         $this->remove($offset);
     }

@@ -14,8 +14,7 @@ use Stk\Service\OnDemand;
 
 class FactoryTest extends TestCase
 {
-    /** @var  DumbContainer */
-    protected $container;
+    protected DumbContainer $container;
 
     protected function setUp(): void
     {
@@ -269,9 +268,9 @@ class ServiceB
 
 class ServiceC implements Injectable
 {
-    public $service;
+    public ServiceA $service;
 
-    public function __construct($serviceA)
+    public function __construct(ServiceA $serviceA)
     {
         $this->service = $serviceA;
     }
@@ -279,8 +278,8 @@ class ServiceC implements Injectable
 
 class ServiceCa implements Injectable
 {
-    public $service;
-    public $config;
+    public ServiceA $service;
+    public array $config;
 
     public function __construct($serviceA, $config = [])
     {
@@ -295,20 +294,19 @@ class ServiceD
 
 class ServiceE
 {
-    /** @var OnDemand */
-    public $onDemand;
+    public OnDemand $onDemand;
 
     private function setService(OnDemand $onDemandServiceH)
     {
         $this->onDemand = $onDemandServiceH;
     }
 
-    public function getService()
+    public function getService(): ServiceH
     {
         return $this->onDemand->getInstance();
     }
 
-    public function newService()
+    public function newService(): ServiceH
     {
         return $this->onDemand->newInstance();
     }
@@ -317,14 +315,13 @@ class ServiceE
 
 class ServiceF implements Injectable
 {
-    public $serviceB;
-    protected $serviceA;
+    public Injectable $serviceB;
+    protected Injectable $serviceA;
 
-    public $service;
-    public $config;
-    public $varx;
+    public ServiceC $service;
+    public array $config;
 
-    public function __construct($serviceC, $config = [])
+    public function __construct(ServiceC $serviceC, $config = [])
     {
         $this->service = $serviceC;
         $this->config  = $config;
@@ -344,31 +341,30 @@ class ServiceF implements Injectable
 
 class ServiceG
 {
-    public $service;
-    public $whatever;
-    public $blackhole = 'black';
+    public Injectable $service;
+    public array $whatever;
+    public ?string $blackhole = 'black';
 
     private function setFoo(Injectable $serviceA)
     {
         $this->service = $serviceA;
     }
 
-    private function setBar(Injectable $serviceA, $blackhole, $whatever = [])
+    private function setBar(Injectable $serviceA, string $blackhole = null, array $whatever = []): void
     {
         $this->service   = $serviceA;
         $this->whatever  = $whatever;
         $this->blackhole = $blackhole;
     }
-
 }
 
 
 class ServiceH
 {
-    public $arg1 = null;
-    public $arg2 = null;
+    public ?string $arg1 = null;
+    public ?string $arg2 = null;
 
-    public function __construct($arg1 = null, $arg2 = null)
+    public function __construct(string $arg1 = null, string $arg2 = null)
     {
         $this->arg1 = $arg1;
         $this->arg2 = $arg2;
@@ -378,8 +374,8 @@ class ServiceH
 
 class ServiceI
 {
-    public $arg1 = null;
-    public $arg2 = null;
+    public ?bool $arg1 = null;
+    public ?stdClass $arg2 = null;
 
     public function __construct(bool $arg1 = null, stdClass $arg2 = null)
     {
@@ -390,15 +386,14 @@ class ServiceI
 
 class ServiceJ implements Injectable
 {
-    public $container = null;
-    /** @var OnDemand */
-    public $foreignService = null;
+    public ContainerInterface $container;
 
-    public function __construct($container)
+    public OnDemand $foreignService;
+
+    public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
     }
-
 
     private function setForeignServices(OnDemand $foreignService)
     {
@@ -408,10 +403,10 @@ class ServiceJ implements Injectable
 
 class ServiceK implements Injectable
 {
-    public $config = null;
-    public $arg2 = null;
+    public array $config;
+    public string $arg2;
 
-    public function __construct($config, $arg2)
+    public function __construct(array $config, string $arg2)
     {
         $this->config = $config;
         $this->arg2   = $arg2;
@@ -422,11 +417,9 @@ class ServiceK implements Injectable
 
 class ServiceL implements Injectable
 {
-    /** @var Closure */
-    public $closure = null;
+    public ?Closure $closure = null;
 
-    /** @var Closure */
-    public $closureWithParam = null;
+    public ?Closure $closureWithParam = null;
 
     private function setClosures(Closure $closure, Closure $closureWithParam)
     {

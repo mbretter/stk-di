@@ -25,7 +25,7 @@ class FactoryTest extends TestCase
         ];
 
         $container['factory']  = new Factory($container);
-        $container['serviceA'] = function (ContainerInterface $c) {
+        $container['serviceA'] = function ($c) {
             return $c['factory']->build(new ReflectionClass(ServiceA::class));
         };
 
@@ -71,6 +71,10 @@ class FactoryTest extends TestCase
             return $c['factory']->get(ServiceL::class);
         };
 
+        $container['serviceM'] = function ($c) {
+            return $c['factory']->get(ServiceM::class);
+        };
+
         $container['onDemandServiceH'] = function ($c) {
             return $c['factory']->protect(ServiceH::class);
         };
@@ -98,7 +102,7 @@ class FactoryTest extends TestCase
         $this->container = $container;
     }
 
-    public function testSimple()
+    public function testSimple(): void
     {
         $serviceA = $this->container->get('serviceA');
         $this->assertInstanceOf(ServiceA::class, $serviceA);
@@ -106,40 +110,41 @@ class FactoryTest extends TestCase
         $this->assertInstanceOf(ServiceB::class, $serviceB);
     }
 
-    public function testConstructorInjection()
+    public function testConstructorInjection(): void
     {
         $serviceC = $this->container->get('serviceC');
         $this->assertInstanceOf(ServiceA::class, $serviceC->service);
     }
 
-    public function testConstructorInjectionWithParams()
+    public function testConstructorInjectionWithParams(): void
     {
         $serviceCa = $this->container->get('serviceCa');
         $this->assertInstanceOf(ServiceA::class, $serviceCa->service);
         $this->assertEquals($this->container->get('config'), $serviceCa->config);
     }
 
-    public function testConstructorInjectionContainer()
+    public function testConstructorInjectionContainer(): void
     {
         $serviceJ = $this->container->get('serviceJ');
         $this->assertSame($this->container, $serviceJ->container);
     }
 
-    public function testCombinedInjection()
+    public function testCombinedInjection(): void
     {
+        /** @var \StkTest\Service\ServiceF $serviceF */
         $serviceF = $this->container->get('serviceF');
         $this->assertEquals($this->container->get('config'), $serviceF->config);
         $this->assertInstanceOf(ServiceC::class, $serviceF->service);
         $this->assertInstanceOf(ServiceA::class, $serviceF->getServiceA());
     }
 
-    public function testParameterTypeInjection()
+    public function testParameterTypeInjection(): void
     {
         $serviceG = $this->container->get('serviceG');
         $this->assertInstanceOf(ServiceA::class, $serviceG->service);
     }
 
-    public function testParameterTypeInjectionWithForeignParam()
+    public function testParameterTypeInjectionWithForeignParam(): void
     {
         $serviceG = $this->container->get('serviceG');
         $this->assertInstanceOf(ServiceA::class, $serviceG->service);
@@ -147,7 +152,7 @@ class FactoryTest extends TestCase
         $this->assertNull($serviceG->blackhole);
     }
 
-    public function testWithContainerParams()
+    public function testWithContainerParams(): void
     {
         /** @var Closure $serviceK */
         $factory = $this->container->get('serviceK');
@@ -159,7 +164,7 @@ class FactoryTest extends TestCase
         $this->assertEquals('val2', $serviceK->arg2);
     }
 
-    public function testOnDemand()
+    public function testOnDemand(): void
     {
         /** @var OnDemand $serviceH */
         $serviceH = $this->container->get('onDemandServiceH');
@@ -168,7 +173,7 @@ class FactoryTest extends TestCase
         $this->assertInstanceOf(ServiceH::class, $inst);
     }
 
-    public function testOnDemandWithArgs()
+    public function testOnDemandWithArgs(): void
     {
         /** @var OnDemand $serviceH */
         $serviceH = $this->container->get('onDemandServiceH');
@@ -181,7 +186,7 @@ class FactoryTest extends TestCase
         $this->assertEquals($inst, $inst2);
     }
 
-    public function testOnDemandNewWithArgs()
+    public function testOnDemandNewWithArgs(): void
     {
         /** @var OnDemand $serviceH */
         $serviceH = $this->container->get('onDemandServiceH');
@@ -195,7 +200,7 @@ class FactoryTest extends TestCase
         $this->assertEquals('alice', $inst2->arg2);
     }
 
-    public function testOnDemandNewWithTypedArgs()
+    public function testOnDemandNewWithTypedArgs(): void
     {
         /** @var OnDemand $serviceI */
         $serviceI = $this->container->get('onDemandServiceI');
@@ -206,7 +211,7 @@ class FactoryTest extends TestCase
         $this->assertEquals(new stdClass(), $inst->arg2);
     }
 
-    public function testOnDemandInject()
+    public function testOnDemandInject(): void
     {
         /** @var ServiceE $serviceE */
         $serviceE = $this->container->get('serviceE');
@@ -217,7 +222,7 @@ class FactoryTest extends TestCase
         $this->assertNotSame($svc, $serviceE->newService());
     }
 
-    public function testOnDemandForeignService()
+    public function testOnDemandForeignService(): void
     {
         /** @var OnDemand */
         $foreignService = $this->container->get('foreignService');
@@ -231,7 +236,7 @@ class FactoryTest extends TestCase
         $this->assertInstanceOf(stdClass::class, $serviceJ->foreignService->getInstance());
     }
 
-    public function testClosureInject()
+    public function testClosureInject(): void
     {
         /** @var ServiceL $serviceL */
         $serviceL = $this->container->get('serviceL');
@@ -243,7 +248,7 @@ class FactoryTest extends TestCase
         $this->assertEquals('Closure', $svc->creator);
     }
 
-    public function testClosureInjectWithParam()
+    public function testClosureInjectWithParam(): void
     {
         /** @var ServiceL $serviceL */
         $serviceL = $this->container->get('serviceL');
@@ -253,6 +258,15 @@ class FactoryTest extends TestCase
         $svc = $closure('itsme');
         $this->assertInstanceOf(stdClass::class, $svc);
         $this->assertEquals('itsme', $svc->creator);
+    }
+
+    /* union types are ignored */
+    public function testUnionType(): void
+    {
+        /** @var ServiceM $serviceM */
+        $serviceM = $this->container->get('serviceM');
+
+        $this->assertNull($serviceM->getServiceA());
     }
 }
 
@@ -296,7 +310,7 @@ class ServiceE
 {
     public OnDemand $onDemand;
 
-    private function setService(OnDemand $onDemandServiceH)
+    private function setService(OnDemand $onDemandServiceH): void
     {
         $this->onDemand = $onDemandServiceH;
     }
@@ -315,24 +329,23 @@ class ServiceE
 
 class ServiceF implements Injectable
 {
-    public Injectable $serviceB;
     protected Injectable $serviceA;
 
     public ServiceC $service;
     public array $config;
 
-    public function __construct(ServiceC $serviceC, $config = [])
+    public function __construct(ServiceC $serviceC, array $config = [])
     {
         $this->service = $serviceC;
         $this->config  = $config;
     }
 
-    private function setServiceA(Injectable $serviceA)
+    private function setServiceA(Injectable $serviceA): void
     {
         $this->serviceA = $serviceA;
     }
 
-    public function getServiceA()
+    public function getServiceA(): Injectable
     {
         return $this->serviceA;
     }
@@ -425,6 +438,22 @@ class ServiceL implements Injectable
     {
         $this->closure = $closure;
         $this->closureWithParam = $closureWithParam;
+    }
+
+}
+
+class ServiceM implements Injectable
+{
+    protected ?Injectable $serviceA = null;
+
+    private function setServiceA(Injectable|OnDemand $serviceA): void
+    {
+        $this->serviceA = $serviceA;
+    }
+
+    public function getServiceA(): ?Injectable
+    {
+        return $this->serviceA;
     }
 
 }

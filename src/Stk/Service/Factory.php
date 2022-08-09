@@ -3,12 +3,14 @@
 namespace Stk\Service;
 
 use Closure;
-use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
-use Psr\Container\NotFoundExceptionInterface;
+use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
+use ReflectionNamedType;
+use ReflectionProperty;
+use Stk\Attribute\Inject;
 
 class Factory
 {
@@ -29,7 +31,7 @@ class Factory
      *
      * @return OnDemand
      */
-    public function protect(string $classname, ...$params)
+    public function protect(string $classname, ...$params): OnDemand
     {
         array_unshift($params, $classname);
 
@@ -44,16 +46,18 @@ class Factory
      * @param class-string $classname
      * @param array ...$params
      *
-     * @return mixed
+     * @return object
      * @throws ReflectionException
      */
-    public function get(string $classname, ...$params)
+    public function get(string $classname, ...$params): object
     {
         $reflectionClass = new ReflectionClass($classname);
         array_unshift($params, $reflectionClass);
         $svc = call_user_func_array([$this, 'build'], $params);
 
-        return $this->di($svc, $reflectionClass);
+        $svc = $this->di($svc, $reflectionClass);
+
+        return $this->injectAttributes($svc, $reflectionClass);
     }
 
     /**
@@ -63,7 +67,9 @@ class Factory
      * @param array ...$params
      *
      * @return object
-     * @throws ReflectionException
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     * @throws \ReflectionException
      */
     public function build(ReflectionClass $reflectionClass, ...$params): object
     {
@@ -100,7 +106,9 @@ class Factory
      * @param ?ReflectionClass $reflectionClass
      *
      * @return object
-     * @throws ReflectionException
+     * @throws \Psr\Container\ContainerExceptionInterface
+     * @throws \Psr\Container\NotFoundExceptionInterface
+     * @throws \ReflectionException
      */
     public function di(object $svc, ReflectionClass $reflectionClass = null): object
     {
@@ -125,10 +133,20 @@ class Factory
             foreach ($method->getParameters() as $idx => $param) {
 
                 $paramName = $param->getName();
-                if ($param->getClass() !== null && $param->getClass()->implementsInterface(Injectable::class)) {
+                $paramType = $param->getType();
+
+                $paramClass = null;
+                if ($paramType instanceof ReflectionNamedType) {
+                    $className = $paramType->getName();
+                    if (class_exists($className) || interface_exists($className)) {
+                        $paramClass = new ReflectionClass($className);
+                    }
+                }
+
+                if ($paramClass?->implementsInterface(Injectable::class)) {
                     $args[] = $this->container->get($paramName);
                     $found  = true;
-                } elseif ($param->getClass() !== null && $param->getClass()->getName() == Closure::class) {
+                } elseif ($paramClass !== null && $paramClass->getName() == Closure::class) {
                     // closure injection, but only if found in container
                     if ($this->container->has($paramName)) {
                         $args[] = $this->container->get($paramName);
@@ -147,6 +165,39 @@ class Factory
                 $method->setAccessible(true);
                 $method->invokeArgs($svc, $args);
             }
+        }
+
+        return $svc;
+    }
+
+    protected function injectAttributes(object $svc, ReflectionClass $reflectionClass): object
+    {
+        $attrs = $reflectionClass->getAttributes(Inject::class, ReflectionAttribute::IS_INSTANCEOF);
+        foreach ($attrs as $attr) {
+            $a = $attr->newInstance();
+
+            if ($a->id === null) {
+                continue;
+            }
+
+            $popertyName = $a->prop ?: $a->id;
+
+            $prop = new ReflectionProperty($svc, $popertyName);
+            $prop->setAccessible(true);
+            $prop->setValue($svc, $this->container->get($a->id) ?: $popertyName);
+        }
+
+        $props = $reflectionClass->getProperties(ReflectionProperty::IS_PRIVATE);
+        foreach ($props as $prop) {
+            $attrs = $prop->getAttributes(Inject::class, ReflectionAttribute::IS_INSTANCEOF);
+            if (count($attrs) === 0) {
+                continue;
+            }
+
+            $attr = $attrs[0];
+            $a    = $attr->newInstance();
+            $prop->setAccessible(true);
+            $prop->setValue($svc, $this->container->get($a->id ?: $prop->getName()));
         }
 
         return $svc;

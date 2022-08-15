@@ -187,7 +187,7 @@ class Factory
             $prop->setValue($svc, $this->container->get($a->id) ?: $popertyName);
         }
 
-        $props = $reflectionClass->getProperties(ReflectionProperty::IS_PRIVATE);
+        $props = $reflectionClass->getProperties(ReflectionProperty::IS_PRIVATE | ReflectionProperty::IS_PROTECTED);
         foreach ($props as $prop) {
             $attrs = $prop->getAttributes(Inject::class, ReflectionAttribute::IS_INSTANCEOF);
             if (count($attrs) === 0) {

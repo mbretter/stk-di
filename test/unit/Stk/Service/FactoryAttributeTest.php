@@ -18,7 +18,7 @@ class FactoryAttributeTest extends TestCase
         $container           = new DumbContainer();
         $container['config'] = [
             'param1' => 'foo',
-            'param2' => 'bar'
+            'param2' => 'bar',
         ];
 
         $container['factory']  = new Factory($container);
@@ -44,6 +44,10 @@ class FactoryAttributeTest extends TestCase
 
         $container['serviceE'] = function ($c) {
             return $c['factory']->get(AttrServiceE::class);
+        };
+
+        $container['serviceF'] = function ($c) {
+            return $c['factory']->get(AttrServiceF::class);
         };
 
         $this->container = $container;
@@ -72,6 +76,12 @@ class FactoryAttributeTest extends TestCase
         $this->assertInstanceOf(AttrServiceA::class, $serviceE->getServiceA());
     }
 
+    public function testWithTrait(): void
+    {
+        /** @var AttrServiceF $serviceF */
+        $serviceF = $this->container->get('serviceF');
+        $this->assertInstanceOf(AttrServiceA::class, $serviceF->getServiceA());
+    }
 }
 
 class AttrServiceA implements Injectable
@@ -132,6 +142,20 @@ class AttrServiceE implements Injectable
     {
         return $this->serviceADemand->getInstance();
     }
+}
 
+trait AttrServiceTrait {
+    #[Inject]
+    protected OnDemand $serviceADemand;
+
+    public function getServiceA(): AttrServiceA
+    {
+        return $this->serviceADemand->getInstance();
+    }
+}
+
+class AttrServiceF implements Injectable
+{
+    use AttrServiceTrait;
 }
 

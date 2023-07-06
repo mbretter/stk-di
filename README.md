@@ -4,6 +4,7 @@
 [![PHP 8](https://img.shields.io/badge/php-8-yellow.svg)](http://www.php.net)
 [![Latest Stable Version](https://img.shields.io/packagist/v/mbretter/stk-di.svg)](https://packagist.org/packages/mbretter/stk-di)
 [![Total Downloads](https://img.shields.io/packagist/dt/mbretter/stk-di.svg)](https://packagist.org/packages/mbretter/stk-di)
+![CI](https://github.com/mbretter/stk-di/actions/workflows/ci.yml/badge.svg)
 
 A simple dependency injection system usable with any container implementing the Psr\Container\ContainerInterface.
 
